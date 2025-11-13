@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BrowserJack v0.2.2</title>
+<style>
+body { 
+    font-family: Arial, sans-serif; /* main UI font */
+    background: #35654d; 
+    color: #eee; 
+    text-align: center;
+}
+#logo {
+    margin-bottom: 5px;
+    color: #fff;
+}
+#subtitle {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+#gameDisplay {
+    font-family: monospace; /* keep ASCII cards aligned */
+    display: inline-block;
+    text-align: left;
+}
+#betButtons {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.button90s {
+    display: inline-block;
+    padding: 10px 20px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    color: black;
+    background-color: #e0e0e0;
+    border: 2px solid #808080;
+    box-shadow: 2px 2px 0 #fff inset, -2px -2px 0 #000 inset;
+    cursor: pointer;
+    text-align: center;
+    user-select: none;
+}
+.button90s:active {
+    box-shadow: inset 2px 2px 0 #000, inset -2px -2px 0 #fff;
+}
+#patchNotes {
+    font-size: 12px;
+    color: #ccc;
+    margin-top: 30px;
+    text-align: left;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>
+</head>
+<body>
+<pre id="logo">
+                                                                     
+█████▄ ▄▄▄▄   ▄▄▄  ▄▄   ▄▄  ▄▄▄▄ ▄▄▄▄▄ ▄▄▄▄     ██  ▄▄▄   ▄▄▄▄ ▄▄ ▄▄ 
+██▄▄██ ██▄█▄ ██▀██ ██ ▄ ██ ███▄▄ ██▄▄  ██▄█▄    ██ ██▀██ ██▀▀▀ ██▄█▀ 
+██▄▄█▀ ██ ██ ▀███▀  ▀█▀█▀  ▄▄██▀ ██▄▄▄ ██ ██ ████▀ ██▀██ ▀████ ██ ██ 
+                                                                     
+</pre>
+<div id="subtitle">By 450exp</div>
+
+<p>Chips: <span id="chipsDisplay">2000</span> | Current Bet: <span id="betDisplay">0</span></p>
+<div id="betButtons">
+    <button class="button90s betBtn" data-value="50">50</button>
+    <button class="button90s betBtn" data-value="100">100</button>
+    <button class="button90s betBtn" data-value="250">250</button>
+    <button class="button90s betBtn" data-value="500">500</button>
+    <button class="button90s betBtn" data-value="1000">1000</button>
+    <button class="button90s" id="clearBetBtn">Clear Bet</button>
+    <button class="button90s" id="repeatBetBtn">Repeat Bet</button>
+    <button class="button90s" id="placeBetBtn">Place Bet</button>
+</div>
+
+<pre id="gameDisplay"></pre>
+
+<div style="text-align:center; margin-top:10px;">
+    <button class="button90s" id="hitBtn">Hit</button>
+    <button class="button90s" id="standBtn">Stand</button>
+    <button class="button90s" id="resetBtn" style="display:none;">Reset Chips</button>
+</div>
+
+<div id="patchNotes">
+<b>Patch Notes:</b><br>
+v0.1.0: Initial browser-based ASCII blackjack with betting system and chip buttons.<br>
+v0.1.1: Round stays displayed until player places a new bet.<br>
+v0.1.2: Added Blackjack special win message; hand only starts on Place Bet or Repeat Bet.<br>
+v0.1.3: Dealer hidden card displayed as face-down until round ends; first card always visible.<br>
+v0.2.0: Updated UI font to Arial; button graphics added; patch notes section added.<br>
+v0.2.1: UI reorganized.<br>
+v0.2.2: Dealer hand sum displayed at the end of the round instead of card count.
+</div>
+
+<script>
+const suits = ['♠','♥','♦','♣'];
+const faces = [2,3,4,5,6,7,8,9,10,'J','Q','K','A'];
+
+let deck = [];
+let playerHand = [];
+let dealerHand = [];
+let playerChips = 2000;
+let currentBet = 0;
+let lastBet = 0;
+let gameActive = false;
+let roundOver = true;
+let blackjack = false;
+
+function initDeck() {
+    deck = [];
+    for (let f of faces) {
+        for (let s of suits) {
+            deck.push({face: f, suit: s});
+        }
+    }
+    deck.sort(() => Math.random() - 0.5);
+}
+
+function drawCard(hand) {
+    if(deck.length === 0) initDeck();
+    hand.push(deck.pop());
+}
+
+function handValue(hand) {
+    let sum = 0;
+    let aces = 0;
+    for (let c of hand) {
+        if (['J','Q','K'].includes(c.face)) sum += 10;
+        else if (c.face === 'A') { sum += 11; aces++; }
+        else sum += c.face;
+    }
+    while (sum > 21 && aces > 0) { sum -= 10; aces--; }
+    return sum;
+}
+
+function renderHand(hand) {
+    let lines = Array(9).fill('').map(_=>'');
+    hand.forEach((c, idx) => {
+        let f = c.face.toString();
+        let fLeft = f.padEnd(2,' ');
+        let fRight = f.padStart(2,' ');
+        lines[0] += `${idx+1}) ┌─────────┐ `;
+        lines[1] += `   │${fLeft}       │ `;
+        lines[2] += `   │         │ `;
+        lines[3] += `   │         │ `;
+        lines[4] += `   │    ${c.suit}    │ `;
+        lines[5] += `   │         │ `;
+        lines[6] += `   │         │ `;
+        lines[7] += `   │       ${fRight}│ `;
+        lines[8] += `   └─────────┘ `;
+    });
+    return lines.join('\n');
+}
+
+function renderDealer(hand, reveal=false){
+    let lines = Array(9).fill('').map(_=>'');
+    hand.forEach((c, idx) => {
+        if(idx === 0 || reveal){
+            let f = c.face.toString();
+            let fLeft = f.padEnd(2,' ');
+            let fRight = f.padStart(2,' ');
+            lines[0] += `   ┌─────────┐ `;
+            lines[1] += `   │${fLeft}       │ `;
+            lines[2] += `   │         │ `;
+            lines[3] += `   │         │ `;
+            lines[4] += `   │    ${c.suit}    │ `;
+            lines[5] += `   │         │ `;
+            lines[6] += `   │         │ `;
+            lines[7] += `   │       ${fRight}│ `;
+            lines[8] += `   └─────────┘ `;
+        } else {
+            lines[0] += `   ┌─────────┐ `;
+            for(let i=1;i<8;i++) lines[i] += `   │░░░░░░░░░│ `;
+            lines[8] += `   └─────────┘ `;
+        }
+    });
+    return lines.join('\n');
+}
+
+function updateDisplay(msg='') {
+    const display = document.getElementById('gameDisplay');
+    let text = `Your Hand (${handValue(playerHand)}):\n`;
+    text += renderHand(playerHand) + '\n\n';
+
+    let revealDealer = roundOver;
+    let dealerText = revealDealer ? `Dealer Hand (${handValue(dealerHand)}):\n` : `Dealer Hand:\n`;
+    text += dealerText;
+    text += renderDealer(dealerHand, revealDealer) + '\n\n';
+    
+    text += msg;
+    display.textContent = text;
+    document.getElementById('chipsDisplay').textContent = playerChips;
+    document.getElementById('betDisplay').textContent = currentBet;
+}
+
+function dealerPlay() {
+    while(handValue(dealerHand) < 17) drawCard(dealerHand);
+}
+
+function checkWinner() {
+    dealerPlay();
+    const player = handValue(playerHand);
+    const dealer = handValue(dealerHand);
+    let result = '';
+
+    if(blackjack){
+        result = "BLACKJACK! You win 1.5x!";
+        playerChips += Math.floor(currentBet * 1.5);
+    } else if(player > 21) { result = "You bust! Dealer wins."; playerChips -= currentBet; }
+    else if(dealer > 21) { result = "Dealer busts! You win!"; playerChips += currentBet; }
+    else if(player > dealer) { result = "You win!"; playerChips += currentBet; }
+    else if(dealer > player) { result = "Dealer wins!"; playerChips -= currentBet; }
+    else result = "Push (tie)!";
+
+    if(playerChips <= 0){
+        document.getElementById('resetBtn').style.display='inline';
+    }
+
+    lastBet = currentBet;
+    currentBet = 0;
+    roundOver = true;
+    gameActive = false;
+    updateDisplay(result);
+}
+
+function startHand() {
+    if(currentBet <= 0 || currentBet > playerChips){
+        updateDisplay("Place a valid bet to start the hand!");
+        return;
+    }
+    initDeck();
+    playerHand = [];
+    dealerHand = [];
+    drawCard(playerHand);
+    drawCard(dealerHand);
+    drawCard(playerHand);
+    drawCard(dealerHand);
+    blackjack = (handValue(playerHand) === 21 && playerHand.length === 2);
+    roundOver = false;
+    gameActive = true;
+    if(blackjack){
+        checkWinner();
+    } else updateDisplay();
+}
+
+// Betting buttons
+document.querySelectorAll('.betBtn').forEach(btn=>{
+    btn.onclick = () => {
+        let bet = parseInt(btn.dataset.value);
+        if(playerChips - currentBet >= bet){
+            currentBet += bet;
+            lastBet = currentBet;
+            updateDisplay();
+        } else alert("Not enough chips!");
+    };
+});
+
+document.getElementById('repeatBetBtn').onclick = ()=>{
+    if(lastBet>0 && playerChips >= lastBet){
+        currentBet = lastBet;
+        startHand();
+    } else alert("Cannot repeat last bet!");
+};
+
+document.getElementById('clearBetBtn').onclick = ()=>{
+    currentBet = 0;
+    updateDisplay();
+};
+
+document.getElementById('placeBetBtn').onclick = ()=>{
+    startHand();
+};
+
+document.getElementById('resetBtn').onclick = ()=>{
+    playerChips=2000;
+    currentBet=0;
+    lastBet=0;
+    document.getElementById('resetBtn').style.display='none';
+    updateDisplay();
+};
+
+document.getElementById('hitBtn').onclick = ()=>{
+    if(!gameActive) return;
+    drawCard(playerHand);
+    if(handValue(playerHand) > 21){
+        checkWinner();
+    } else updateDisplay();
+};
+
+document.getElementById('standBtn').onclick = ()=>{
+    if(!gameActive) return;
+    checkWinner();
+};
+</script>
+</body>
+</html>
