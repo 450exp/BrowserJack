@@ -1,65 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>BrowserJack v0.2.2</title>
+<meta charset="utf-8" />
+<title>BrowserJack v0.2.3</title>
 <style>
 body { 
     font-family: Arial, sans-serif; /* main UI font */
     background: #35654d; 
     color: #eee; 
     text-align: center;
+    margin: 0;
+    padding: 18px;
+    box-sizing: border-box;
 }
 #logo {
-    margin-bottom: 5px;
     color: #fff;
+    margin-bottom: 6px;
 }
-#subtitle {
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-#gameDisplay {
-    font-family: monospace; /* keep ASCII cards aligned */
-    display: inline-block;
-    text-align: left;
-}
-#betButtons {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
+#subtitle { font-size: 16px; margin-bottom: 18px; }
+#gameDisplay { font-family: monospace; display: inline-block; text-align: left; }
+#betButtons { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
 .button90s {
-    display: inline-block;
-    padding: 10px 20px;
+    display:inline-block;
+    padding:10px 20px;
     font-family: Arial, sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-    color: black;
-    background-color: #e0e0e0;
-    border: 2px solid #808080;
-    box-shadow: 2px 2px 0 #fff inset, -2px -2px 0 #000 inset;
-    cursor: pointer;
-    text-align: center;
-    user-select: none;
+    font-weight:bold;
+    font-size:14px;
+    color:black;
+    background-color:#e0e0e0;
+    border:2px solid #808080;
+    box-shadow:2px 2px 0 #fff inset, -2px -2px 0 #000 inset;
+    cursor:pointer;
+    text-align:center;
+    user-select:none;
 }
-.button90s:active {
-    box-shadow: inset 2px 2px 0 #000, inset -2px -2px 0 #fff;
-}
-#patchNotes {
-    font-size: 12px;
-    color: #ccc;
-    margin-top: 30px;
-    text-align: left;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
+.button90s:active { box-shadow: inset 2px 2px 0 #000, inset -2px -2px 0 #fff; }
+.button90s[disabled] { opacity:0.6; cursor:not-allowed; }
+#actionRow { text-align:center; margin-top:10px; }
+#patchNotes { font-size:12px; color:#ccc; margin-top:26px; text-align:left; max-width:820px; margin-left:auto; margin-right:auto; }
+pre.ascii { background: transparent; padding: 0; margin: 0; }
 </style>
 </head>
 <body>
-<pre id="logo">
+<pre id="logo" class="ascii">
                                                                      
 █████▄ ▄▄▄▄   ▄▄▄  ▄▄   ▄▄  ▄▄▄▄ ▄▄▄▄▄ ▄▄▄▄     ██  ▄▄▄   ▄▄▄▄ ▄▄ ▄▄ 
 ██▄▄██ ██▄█▄ ██▀██ ██ ▄ ██ ███▄▄ ██▄▄  ██▄█▄    ██ ██▀██ ██▀▀▀ ██▄█▀ 
@@ -69,37 +52,45 @@ body {
 <div id="subtitle">By 450exp</div>
 
 <p>Chips: <span id="chipsDisplay">2000</span> | Current Bet: <span id="betDisplay">0</span></p>
+
+<!-- betting controls (Clear Bet first, then Repeat Bet) -->
 <div id="betButtons">
     <button class="button90s betBtn" data-value="50">50</button>
     <button class="button90s betBtn" data-value="100">100</button>
     <button class="button90s betBtn" data-value="250">250</button>
     <button class="button90s betBtn" data-value="500">500</button>
     <button class="button90s betBtn" data-value="1000">1000</button>
+
+    <!-- swapped order: Clear then Repeat -->
     <button class="button90s" id="clearBetBtn">Clear Bet</button>
     <button class="button90s" id="repeatBetBtn">Repeat Bet</button>
     <button class="button90s" id="placeBetBtn">Place Bet</button>
 </div>
 
-<pre id="gameDisplay"></pre>
+<pre id="gameDisplay" class="ascii"></pre>
 
-<div style="text-align:center; margin-top:10px;">
+<div id="actionRow">
     <button class="button90s" id="hitBtn">Hit</button>
     <button class="button90s" id="standBtn">Stand</button>
     <button class="button90s" id="resetBtn" style="display:none;">Reset Chips</button>
 </div>
 
-<div id="patchNotes">
-<b>Patch Notes:</b><br>
-v0.1.0: Initial browser-based ASCII blackjack with betting system and chip buttons.<br>
-v0.1.1: Round stays displayed until player places a new bet.<br>
-v0.1.2: Added Blackjack special win message; hand only starts on Place Bet or Repeat Bet.<br>
-v0.1.3: Dealer hidden card displayed as face-down until round ends; first card always visible.<br>
-v0.2.0: Updated UI font to Arial; button graphics added; patch notes section added.<br>
-v0.2.1: UI reorganized.<br>
-v0.2.2: Dealer hand sum displayed at the end of the round instead of card count.
-</div>
+<details style="margin-top:26px; color:white;">
+  <summary style="cursor:pointer;">Patch Notes</summary>
+  <div id="patchNotes">
+    v0.1.0: Initial browser-based ASCII blackjack with betting system and chip buttons.<br>
+    v0.1.1: Round stays displayed until player places a new bet.<br>
+    v0.1.2: Added Blackjack special win message; hand only starts on Place Bet or Repeat Bet.<br>
+    v0.1.3: Dealer hidden card displayed as face-down until round ends; first card always visible.<br>
+    v0.2.0: Updated UI font to Arial; button graphics added; patch notes section added.<br>
+    v0.2.1: UI reorganized.<br>
+    v0.2.2: Dealer hand sum displayed at the end of the round instead of card count.<br>
+    v0.2.3: Betting locked while a round is active; patch notes hidden in dropdown.<br>
+  </div>
+</details>
 
 <script>
+/* == Game state (based on v0.2.2) == */
 const suits = ['♠','♥','♦','♣'];
 const faces = [2,3,4,5,6,7,8,9,10,'J','Q','K','A'];
 
@@ -109,41 +100,49 @@ let dealerHand = [];
 let playerChips = 2000;
 let currentBet = 0;
 let lastBet = 0;
-let gameActive = false;
-let roundOver = true;
+let gameActive = false;   // true while round in progress
+let roundOver = true;     // true when waiting for next bet
 let blackjack = false;
 
+/* == Helpers == */
 function initDeck() {
     deck = [];
-    for (let f of faces) {
-        for (let s of suits) {
-            deck.push({face: f, suit: s});
-        }
-    }
+    for (let f of faces) for (let s of suits) deck.push({face: f, suit: s});
     deck.sort(() => Math.random() - 0.5);
 }
-
 function drawCard(hand) {
     if(deck.length === 0) initDeck();
     hand.push(deck.pop());
 }
-
+function faceValue(face) {
+    if (face === 'J' || face === 'Q' || face === 'K') return 10;
+    if (face === 'A') return 11;
+    return typeof face === 'number' ? face : parseInt(face);
+}
 function handValue(hand) {
-    let sum = 0;
-    let aces = 0;
+    let sum = 0, aces = 0;
     for (let c of hand) {
-        if (['J','Q','K'].includes(c.face)) sum += 10;
+        if (c.face === 'J' || c.face === 'Q' || c.face === 'K') sum += 10;
         else if (c.face === 'A') { sum += 11; aces++; }
         else sum += c.face;
     }
     while (sum > 21 && aces > 0) { sum -= 10; aces--; }
     return sum;
 }
+function facePrint(card) {
+    let f = card.face;
+    if (f === 11) return 'J';
+    if (f === 12) return 'Q';
+    if (f === 13) return 'K';
+    if (f === 14) return 'A';
+    return f.toString();
+}
 
+/* ascii rendering (kept same as v0.2.2) */
 function renderHand(hand) {
     let lines = Array(9).fill('').map(_=>'');
     hand.forEach((c, idx) => {
-        let f = c.face.toString();
+        let f = (c.face === 11? 'J' : c.face===12? 'Q': c.face===13? 'K' : c.face===14? 'A' : c.face).toString();
         let fLeft = f.padEnd(2,' ');
         let fRight = f.padStart(2,' ');
         lines[0] += `${idx+1}) ┌─────────┐ `;
@@ -158,12 +157,11 @@ function renderHand(hand) {
     });
     return lines.join('\n');
 }
-
 function renderDealer(hand, reveal=false){
     let lines = Array(9).fill('').map(_=>'');
     hand.forEach((c, idx) => {
         if(idx === 0 || reveal){
-            let f = c.face.toString();
+            let f = (c.face === 11? 'J' : c.face===12? 'Q': c.face===13? 'K' : c.face===14? 'A' : c.face).toString();
             let fLeft = f.padEnd(2,' ');
             let fRight = f.padStart(2,' ');
             lines[0] += `   ┌─────────┐ `;
@@ -184,6 +182,7 @@ function renderDealer(hand, reveal=false){
     return lines.join('\n');
 }
 
+/* == UI updates == */
 function updateDisplay(msg='') {
     const display = document.getElementById('gameDisplay');
     let text = `Your Hand (${handValue(playerHand)}):\n`;
@@ -193,13 +192,28 @@ function updateDisplay(msg='') {
     let dealerText = revealDealer ? `Dealer Hand (${handValue(dealerHand)}):\n` : `Dealer Hand:\n`;
     text += dealerText;
     text += renderDealer(dealerHand, revealDealer) + '\n\n';
-    
     text += msg;
     display.textContent = text;
+
     document.getElementById('chipsDisplay').textContent = playerChips;
     document.getElementById('betDisplay').textContent = currentBet;
+
+    // enable/disable action buttons
+    document.getElementById('hitBtn').style.display = gameActive ? 'inline-block' : 'none';
+    document.getElementById('standBtn').style.display = gameActive ? 'inline-block' : 'none';
+    // reset button visibility if broke
+    document.getElementById('resetBtn').style.display = playerChips <= 0 ? 'inline-block' : 'none';
 }
 
+/* disable/enable betting controls during round */
+function setBetControls(enabled) {
+    document.querySelectorAll('.betBtn').forEach(b=> b.disabled = !enabled);
+    document.getElementById('clearBetBtn').disabled = !enabled;
+    document.getElementById('repeatBetBtn').disabled = !enabled;
+    document.getElementById('placeBetBtn').disabled = !enabled;
+}
+
+/* == Game logic (v0.2.2 base) == */
 function dealerPlay() {
     while(handValue(dealerHand) < 17) drawCard(dealerHand);
 }
@@ -212,6 +226,7 @@ function checkWinner() {
 
     if(blackjack){
         result = "BLACKJACK! You win 1.5x!";
+        // blackjack pays 1.5x on bet (round to integer)
         playerChips += Math.floor(currentBet * 1.5);
     } else if(player > 21) { result = "You bust! Dealer wins."; playerChips -= currentBet; }
     else if(dealer > 21) { result = "Dealer busts! You win!"; playerChips += currentBet; }
@@ -219,14 +234,15 @@ function checkWinner() {
     else if(dealer > player) { result = "Dealer wins!"; playerChips -= currentBet; }
     else result = "Push (tie)!";
 
-    if(playerChips <= 0){
-        document.getElementById('resetBtn').style.display='inline';
+    if(playerChips <= 0) {
+        document.getElementById('resetBtn').style.display = 'inline-block';
     }
 
     lastBet = currentBet;
     currentBet = 0;
     roundOver = true;
     gameActive = false;
+    setBetControls(true); // re-enable betting controls after round ends
     updateDisplay(result);
 }
 
@@ -245,59 +261,79 @@ function startHand() {
     blackjack = (handValue(playerHand) === 21 && playerHand.length === 2);
     roundOver = false;
     gameActive = true;
+    setBetControls(false); // lock betting controls while round active
     if(blackjack){
         checkWinner();
     } else updateDisplay();
 }
 
-// Betting buttons
+/* == Betting handlers (chip buttons only set currentBet; chips are adjusted on outcome like v0.2.2) == */
 document.querySelectorAll('.betBtn').forEach(btn=>{
-    btn.onclick = () => {
-        let bet = parseInt(btn.dataset.value);
-        if(playerChips - currentBet >= bet){
-            currentBet += bet;
-            lastBet = currentBet;
-            updateDisplay();
-        } else alert("Not enough chips!");
-    };
+    btn.addEventListener('click', ()=> {
+        const amount = btn.dataset.value;
+        // amount is string; parse as number
+        const n = Number(amount);
+        if (playerChips - currentBet < 0) { alert("Not enough chips!"); return; }
+        // keep same logic as prior versions: currentBet increases, chips only adjusted on result
+        currentBet += n;
+        lastBet = currentBet;
+        updateDisplay();
+    });
 });
 
-document.getElementById('repeatBetBtn').onclick = ()=>{
-    if(lastBet>0 && playerChips >= lastBet){
+document.getElementById('repeatBetBtn').addEventListener('click', ()=>{
+    if(lastBet > 0 && playerChips >= lastBet){
         currentBet = lastBet;
+        // start immediately
         startHand();
     } else alert("Cannot repeat last bet!");
-};
+});
 
-document.getElementById('clearBetBtn').onclick = ()=>{
+document.getElementById('clearBetBtn').addEventListener('click', ()=>{
+    if(gameActive) return;
     currentBet = 0;
     updateDisplay();
-};
+});
 
-document.getElementById('placeBetBtn').onclick = ()=>{
+document.getElementById('placeBetBtn').addEventListener('click', ()=>{
+    if (gameActive) return;
     startHand();
-};
+});
 
-document.getElementById('resetBtn').onclick = ()=>{
-    playerChips=2000;
-    currentBet=0;
-    lastBet=0;
-    document.getElementById('resetBtn').style.display='none';
-    updateDisplay();
-};
-
-document.getElementById('hitBtn').onclick = ()=>{
+/* Hit / Stand */
+document.getElementById('hitBtn').addEventListener('click', ()=>{
     if(!gameActive) return;
     drawCard(playerHand);
     if(handValue(playerHand) > 21){
         checkWinner();
     } else updateDisplay();
-};
-
-document.getElementById('standBtn').onclick = ()=>{
+});
+document.getElementById('standBtn').addEventListener('click', ()=>{
     if(!gameActive) return;
     checkWinner();
-};
+});
+
+/* Reset chips */
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+    playerChips = 2000;
+    currentBet = 0;
+    lastBet = 0;
+    setBetControls(true);
+    updateDisplay();
+});
+
+/* Initial state */
+function initUI() {
+    initDeck();
+    playerHand = [];
+    dealerHand = [];
+    roundOver = true;
+    gameActive = false;
+    blackjack = false;
+    setBetControls(true);
+    updateDisplay("Place a bet to start a hand.");
+}
+initUI();
 </script>
 </body>
 </html>
